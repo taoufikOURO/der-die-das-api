@@ -1,0 +1,50 @@
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Variables sensibles
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+build/
+dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Bases de données locales
+*.db
+*.sqlite3
+
+# Données volumineuses
+raw_data/
+data/*.csv
+
+# Logs
+*.log
+
+# IDE / éditeurs
+.vscode/
+.idea/
+*.swp
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Alembic (garder les migrations, ignorer seulement les fichiers générés temporaires si besoin)
+# alembic/versions/*.pyc
+
+# Tests
+.pytest_cache/
+htmlcov/
+.coverage
