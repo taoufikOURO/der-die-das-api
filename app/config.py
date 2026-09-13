@@ -9,14 +9,21 @@ class Settings(BaseSettings):
 
     database_url: str
     secret_key: str
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
+
     mastery_streak_threshold: int = 3
     level_completion_threshold: float = 0.85
+
+    smtp_host: str
+    smtp_port: int
+    smtp_username: str
+    smtp_password: str
+    smtp_from: str
+
+    otp_expiry_minutes: int = 10
+    session_expiry_days: int = 7
 
     class Config:
         env_file = ".env"
 
 
-# Instance unique, importée partout où la configuration est nécessaire
 settings = Settings()
