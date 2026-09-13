@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     otp_expiry_minutes: int = 10
     session_expiry_days: int = 7
 
+    environment: str = "development"
+    cookie_secure: bool = False
+    cookie_samesite: str = "lax"
+
     class Config:
         env_file = ".env"
 
