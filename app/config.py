@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     cookie_samesite: str = "lax"
 
+    rush_size: int = 10
+
     class Config:
         env_file = ".env"
 
