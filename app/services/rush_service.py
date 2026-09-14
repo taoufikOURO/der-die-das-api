@@ -21,30 +21,49 @@ def start_rush(db: DBSession, user: User) -> Rush:
 
 def get_rush_words(db: DBSession, user: User, rush: Rush) -> list[Word]:
     """
-    Sélectionne les mots du rush : uniquement des mots du niveau de
-    l'utilisateur qui ne sont pas encore maîtrisés. Les mots ratés
-    reviennent donc naturellement, puisqu'ils ne sont jamais marqués
-    mastered_at tant qu'ils ne sont pas réussis 3 fois sur 3 rushs.
+    Sélectionne les mots du rush : mots non maîtrisés du niveau de
+    l'utilisateur, en priorisant ceux jamais vus, puis ceux vus il y a
+    le plus longtemps, pour éviter de retomber sans arrêt sur les mêmes
+    mots. Un peu d'aléatoire est mélangé dans chaque catégorie.
     """
 
     mastered_word_ids = db.query(WordProgress.word_id).filter(
         WordProgress.user_id == user.id, WordProgress.mastered_at.isnot(None)
     )
 
-    available_words = (
-        db.query(Word)
+    rows = (
+        db.query(Word, WordProgress)
+        .outerjoin(
+            WordProgress,
+            (WordProgress.word_id == Word.id) & (WordProgress.user_id == user.id),
+        )
         .filter(Word.level == user.level)
         .filter(~Word.id.in_(mastered_word_ids))
         .all()
     )
 
-    if not available_words:
+    if not rows:
         raise ValueError(
             "Aucun mot disponible pour ce niveau, il est peut-être déjà terminé."
         )
 
-    sample_size = min(settings.rush_size, len(available_words))
-    return random.sample(available_words, sample_size)
+    never_seen = [word for word, progress in rows if progress is None]
+    already_seen = [
+        (word, progress.last_attempt_at)
+        for word, progress in rows
+        if progress is not None
+    ]
+
+    # Les mots jamais vus d'abord (mélangés entre eux), puis les mots
+    # déjà vus triés du plus ancien au plus récent (les moins "frais" en premier)
+    random.shuffle(never_seen)
+    already_seen.sort(key=lambda pair: pair[1])
+    already_seen_words = [word for word, _ in already_seen]
+
+    ordered_words = never_seen + already_seen_words
+
+    sample_size = min(settings.rush_size, len(ordered_words))
+    return ordered_words[:sample_size]
 
 
 def submit_answer(
