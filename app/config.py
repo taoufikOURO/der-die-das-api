@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -32,17 +31,15 @@ class Settings(BaseSettings):
 
     test_database_url: str = ""
 
-    allowed_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    allowed_origins_raw: str = "http://localhost:5173,http://localhost:3000"
 
-    @field_validator("allowed_origins", mode="before")
-    @classmethod
-    def split_origins(cls, value):
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",")]
-        return value
+    @property
+    def allowed_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.allowed_origins_raw.split(",")]
 
     class Config:
         env_file = ".env"
+        env_prefix = ""
 
 
 settings = Settings()
