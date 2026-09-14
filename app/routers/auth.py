@@ -2,7 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.orm import Session as DBSession
 
 from app.database import get_db
-from app.schemas.user import UserCreate, UserLogin, UserOut, OTPValidate
+from app.schemas.user import (
+    UserCreate,
+    UserLogin,
+    UserOut,
+    OTPValidate,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+)
 from app.services import auth_service
 from app.config import settings
 from app.core.dependencies import get_current_user, require_guest
@@ -68,3 +75,21 @@ def logout(
     auth_service.logout_user(db, token)
     response.delete_cookie("session_token")
     return {"message": "Déconnexion réussie."}
+
+
+@router.post("/forgot-password", dependencies=[Depends(require_guest)])
+def forgot_password(data: ForgotPasswordRequest, db: DBSession = Depends(get_db)):
+    try:
+        auth_service.forgot_password(db, data.email)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"message": "Si cette adresse existe, un code a été envoyé."}
+
+
+@router.post("/reset-password", dependencies=[Depends(require_guest)])
+def reset_password(data: ResetPasswordRequest, db: DBSession = Depends(get_db)):
+    try:
+        auth_service.reset_password(db, data.email, data.otp_code, data.new_password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"message": "Mot de passe réinitialisé avec succès."}

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     otp_expiry_minutes: int = 10
     session_expiry_days: int = 7
+    otp_resend_cooldown_seconds: int = 60
 
     environment: str = "development"
     cookie_secure: bool = False

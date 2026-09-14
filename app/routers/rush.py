@@ -15,6 +15,7 @@ router = APIRouter(prefix="/rush", tags=["rush"])
 def start(
     current_user: User = Depends(get_current_user), db: DBSession = Depends(get_db)
 ):
+    """Démarre un rush pour l'utilisateur actuel et retourne les mots à traiter."""
     try:
         rush = rush_service.start_rush(db, current_user)
         words = rush_service.get_rush_words(db, current_user, rush)
@@ -29,6 +30,7 @@ def answer(
     current_user: User = Depends(get_current_user),
     db: DBSession = Depends(get_db),
 ):
+    """Soumet une réponse pour un mot dans le rush en cours."""
     try:
         result = rush_service.submit_answer(
             db, current_user, data.rush_id, data.word_id, data.proposed_article
@@ -44,6 +46,7 @@ def finish(
     current_user: User = Depends(get_current_user),
     db: DBSession = Depends(get_db),
 ):
+    """Termine le rush en cours et retourne un résumé des résultats."""
     try:
         summary = rush_service.finish_rush(db, current_user, rush_id)
     except ValueError as e:

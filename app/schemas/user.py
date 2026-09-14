@@ -9,10 +9,10 @@ class UserCreate(BaseModel):
     """Données reçues à l'inscription."""
 
     pseudo: str = Field(min_length=3, max_length=30)
-    email: EmailStr 
+    email: EmailStr
     password: str = Field(min_length=8, max_length=72)
     password_confirmation: str = Field(min_length=8, max_length=72)
-    level: Level 
+    level: Level
 
     @field_validator("password")
     @classmethod
@@ -56,3 +56,30 @@ class OTPValidate(BaseModel):
 
     email: EmailStr
     otp_code: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp_code: str
+    new_password: str
+    new_password_confirmation: str
+
+    @field_validator("new_password")
+    @classmethod
+    def password_length(cls, value: str):
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Le mot de passe ne doit pas dépasser 72 octets.")
+        if len(value) < 8:
+            raise ValueError("Le mot de passe doit contenir au moins 8 caractères.")
+        return value
+
+    @field_validator("new_password_confirmation")
+    @classmethod
+    def passwords_match(cls, value, info):
+        if "new_password" in info.data and value != info.data["new_password"]:
+            raise ValueError("Les mots de passe ne correspondent pas.")
+        return value

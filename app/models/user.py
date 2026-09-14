@@ -18,6 +18,11 @@ class User(Base):
     otp_code = Column(String(6), nullable=True)
     otp_expires_at = Column(DateTime(timezone=True), nullable=True)
 
+    otp_purpose = Column(
+        String(30), nullable=True
+    )  # "email_verification" ou "password_reset"
+    otp_last_sent_at = Column(DateTime(timezone=True), nullable=True)
+
     created_at = Column(DateTime(timezone=True), default=utc_now)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
