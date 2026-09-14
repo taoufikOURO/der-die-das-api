@@ -125,3 +125,20 @@ def authenticated_client(client, mock_send_otp_email, db_session):
     client.post("/auth/login", json={"identifier": "testuser", "password": "Test1234"})
 
     return client
+
+
+def _master_word(client, word):
+    """Fait maîtriser un mot en répondant correctement sur N rushs distincts."""
+
+    for _ in range(settings.mastery_streak_threshold):
+        start_response = client.post("/rush/start")
+        rush_id = start_response.json()["rush_id"]
+        client.post(
+            "/rush/answer",
+            json={
+                "rush_id": rush_id,
+                "word_id": word.id,
+                "proposed_article": word.article,
+            },
+        )
+        client.post(f"/rush/{rush_id}/finish")
