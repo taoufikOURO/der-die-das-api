@@ -29,6 +29,8 @@ class Settings(BaseSettings):
 
     rush_size: int = 10
 
+    test_database_url: str = ""
+
     class Config:
         env_file = ".env"
 
