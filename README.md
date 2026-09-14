@@ -63,15 +63,12 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-
-
 ```Shell
 # macOS / Linux
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
-
 
 Créer un fichier `.env` à la racine, sur le modèle `.env.example`
 

@@ -13,11 +13,8 @@ class Settings(BaseSettings):
     mastery_streak_threshold: int = 3
     level_completion_threshold: float = 0.85
 
-    smtp_host: str
-    smtp_port: int
-    smtp_username: str
-    smtp_password: str
     smtp_from: str
+    brevo_api_key: str
 
     otp_expiry_minutes: int = 10
     session_expiry_days: int = 7

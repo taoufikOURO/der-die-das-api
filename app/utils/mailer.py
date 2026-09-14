@@ -1,40 +1,77 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 
 from app.config import settings
 
 
 def send_otp_email(to_email: str, otp_code: str) -> None:
     """
-    Envoie le code OTP à l'adresse email fournie, pour validation
-    de l'adresse à l'inscription (ou renvoi en cas de nouvelle demande).
+    Envoie un code de sécurité par email via l'API Brevo.
+    Ce code peut être utilisé pour la validation de l'adresse
+    email ou la réinitialisation du mot de passe.
     """
 
-    message = MIMEMultipart("alternative")
-    message["Subject"] = "Validation de votre adresse email"
-    message["From"] = settings.smtp_from
-    message["To"] = to_email
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.brevo_api_key,
+        "content-type": "application/json",
+    }
 
     text_body = (
-        f"Voici votre code de validation : {otp_code}\n\n"
-        f"Ce code est valable {settings.otp_expiry_minutes} minutes."
+        f"Votre code de sécurité est : {otp_code}\n\n"
+        f"Ce code est valable {settings.otp_expiry_minutes} minutes.\n\n"
+        "Si vous n'êtes pas à l'origine de cette demande, "
+        "vous pouvez ignorer cet email."
     )
 
     html_body = f"""
     <html>
       <body>
-        <p>Voici votre code de validation :</p>
-        <h2>{otp_code}</h2>
-        <p>Ce code est valable {settings.otp_expiry_minutes} minutes.</p>
+        <h2>Votre code de sécurité</h2>
+
+        <p>Voici votre code de sécurité :</p>
+
+        <h1>{otp_code}</h1>
+
+        <p>
+          Ce code est valable
+          <strong>{settings.otp_expiry_minutes} minutes</strong>.
+        </p>
+
+        <p>
+          Si vous n'êtes pas à l'origine de cette demande,
+          vous pouvez simplement ignorer cet email.
+        </p>
+
+        <p>
+          Cordialement,<br>
+          L'équipe ArtikelBuddy
+        </p>
       </body>
     </html>
     """
 
-    message.attach(MIMEText(text_body, "plain"))
-    message.attach(MIMEText(html_body, "html"))
+    data = {
+        "sender": {
+            "email": settings.smtp_from,
+            "name": "ArtikelBuddy",
+        },
+        "to": [
+            {
+                "email": to_email,
+            }
+        ],
+        "subject": "Votre code de sécurité – ArtikelBuddy",
+        "textContent": text_body,
+        "htmlContent": html_body,
+    }
 
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-        server.starttls()
-        server.login(settings.smtp_username, settings.smtp_password)
-        server.sendmail(settings.smtp_from, to_email, message.as_string())
+    response = requests.post(
+        url,
+        json=data,
+        headers=headers,
+        timeout=15,
+    )
+
+    response.raise_for_status()
